@@ -9,11 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Prediction of Exercise Quality using Wearable Devices.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Over the last few years, there has been a massive increase in the no of gym users using wearable devices such as Fitbit, Jawbone Up and Nike FuelBand. Typically, these are used to quantify the amount of a particular activity done.   
 
 ```{r cars}
 summary(cars)
