@@ -9,20 +9,44 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Prediction of Exercise Quality using Wearable Devices.
+### Prediction of Weight Lifting Exercise Quality
+#### Background
+Over the last few years, there has been a massive increase in the no of gym users using wearable devices such as Fitbit, Jawbone Up and Nike FuelBand. Typically, these are used to quantify the amount of a particular activity done. Rarely, has analysis been done into the quality of the exercise. Using data from accelerometers on the belt, forearm, arm and dumbell, 6 different participants were asked to perform barbell lifts correctly and incorrectly in 5 different ways. The source of this data is taken from:  http://groupware.les.inf.puc-rio.br/har .
 
-Over the last few years, there has been a massive increase in the no of gym users using wearable devices such as Fitbit, Jawbone Up and Nike FuelBand. Typically, these are used to quantify the amount of a particular activity done.   
+#### Aim
+The aim of this project is to build a model that uses the measurements from the accelerometers and classify which of the 5 different ways weight lifting was performed. For reference, outcome class A represents the "correct"" way where B,C,D and E classes correspond to 4 common mistakes. 
 
-```{r cars}
-summary(cars)
+#### Data
+The training data on which the classification model was built is stored here:  
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The validation data contains 20 validation cases without outcome is stored here:  
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+Both of these csv files were imported into R and some processing performed. The outcome variable classe and user name were converted to factors. Also, the accelerometer data in columns 7 through to 159 were explicitly converted to numeric values.
+```{r warning=FALSE}
+setwd("~/Dropbox/Coursera/Practical Machine Learning/Course Project")
+input<- read.csv(file="pml-training.csv",stringsAsFactors = FALSE)
+input$classe<- factor(input$classe)
+input$user_name<- factor(input$user_name)
+input[,7:159]<- apply(input[,7:159], 2, as.numeric)
+```
+The input dataset contains `r nrow(input)` rows and `r ncol(input)` columns. 
+
+It was decided to split this input data into training and testing datasets using a 75%/25% split. The first 7 columns were removed as these contain unnecessary information such as row no, user name and various date timestamps. Additionally, it was necessary to remove approx half of the columns due to near zero variance, being overwhelmingly populated with NA values. 
+
+```{r warning=FALSE}
+library(caret)
+inTrain<- createDataPartition(y=input$classe, p=0.75, list=FALSE)
+training<- input[inTrain,colSums(is.na(input))==0]
+testing<- input[-inTrain,colSums(is.na(input))==0]
+training<- training[,-c(1:7)]
+testing<- testing[,-c(1:7)]
 ```
 
-## Including Plots
+The training and test datasets both have `r ncol(training)` columns and `r nrow(training)` and `r nrow(testing)` rows respectively. As a final check the near zero variance was run again confirming each remaining column had sufficient uniqueness.
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r warning=FALSE}
+nzv<- nearZeroVar(training,saveMetrics = TRUE)
+head(nzv)
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
