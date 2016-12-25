@@ -24,6 +24,7 @@ The validation data contains 20 validation cases without outcome is stored here:
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
 Both of these csv files were imported into R and some processing performed. The outcome variable classe and user name were converted to factors. Also, the accelerometer data in columns 7 through to 159 were explicitly converted to numeric values.
+
 ```{r warning=FALSE}
 setwd("~/Dropbox/Coursera/Practical Machine Learning/Course Project")
 input<- read.csv(file="pml-training.csv",stringsAsFactors = FALSE)
@@ -31,9 +32,10 @@ input$classe<- factor(input$classe)
 input$user_name<- factor(input$user_name)
 input[,7:159]<- apply(input[,7:159], 2, as.numeric)
 ```
+
 The input dataset contains `r nrow(input)` rows and `r ncol(input)` columns. 
 
-It was decided to split this input data into training and testing datasets using a 75%/25% split. The first 7 columns were removed as these contain unnecessary information such as row no, user name and various date timestamps. Additionally, it was necessary to remove approx half of the columns due to near zero variance, being overwhelmingly populated with NA values. 
+It was decided to split this input data into training and testing datasets using a 75%/25% split. The first 7 columns were removed as these contain unnecessary information such as row no, user name and various date timestamps. Additionally, it was necessary to remove approx half of the columns due to near zero variance. These were overwhelmingly populated with NA values. 
 
 ```{r warning=FALSE}
 library(caret)
@@ -44,9 +46,34 @@ training<- training[,-c(1:7)]
 testing<- testing[,-c(1:7)]
 ```
 
-The training and test datasets both have `r ncol(training)` columns and `r nrow(training)` and `r nrow(testing)` rows respectively. As a final check the near zero variance was run again confirming each remaining column had sufficient uniqueness.
+The training and test datasets both have `r ncol(training)` columns and `r nrow(training)` and `r nrow(testing)` rows respectively. As a final check the near zero variance check was run again confirming each remaining column had sufficient uniqueness.
 
 ```{r warning=FALSE}
 nzv<- nearZeroVar(training,saveMetrics = TRUE)
 head(nzv)
 ```
+
+#### Initial analysis
+Some initial analysis was done on the training dataset. Indications were that there were an approximately even spread of 5 output classes and that the accelerometer data tended to cluster around particular values.
+
+```{r warning=FALSE}
+table(training$classe)
+pairs(training[,c(1:5)])
+```
+
+Given the categorical nature of outcome 'classe', it was determined to build a decision tree using caret package.
+
+```{r warning=FALSE}
+set.seed(123)
+modFit1<- train(classe~.,method="rpart",data=training)
+modFit1
+modFit1$finalModel
+```
+
+With the default parameters in caret, it can be seen that the final model was created by bootstrapping with 25 samples. This cross validation ensures that parameters can be tuned and the testing dataset alone can be used to independently determine accuracy. 
+
+```{r warning=FALSE}
+confusionMatrix(predict(modFit1,testing),testing$classe)
+```
+
+The accuracy of the testing dataset is ~48% which is a lot poorer than expected. 
