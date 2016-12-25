@@ -76,4 +76,4 @@ With the default parameters in caret, it can be seen that the final model was cr
 confusionMatrix(predict(modFit1,testing),testing$classe)
 ```
 
-The accuracy of the testing dataset is ~48% which is a lot poorer than expected. 
+The accuracy of the testing dataset is ~48% which is a lot poorer than expected. Part of this may be due to the decision tree not being able to predict class D outcomes. 
